@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Will You Be My Valentine?</title>
+
+  <!-- Background Music -->
+  <audio id="bgMusic" loop preload="none">
+    <source src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_2c6d4b5b6f.mp3" type="audio/mpeg">
+  </audio>
+
+  <style>
+    * {
+      box-sizing: border-box;
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Helvetica Neue", Arial, sans-serif;
+    }
+
+    body {
+      margin: 0;
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: linear-gradient(180deg, #fdf2f8, #fce7f3, #fbcfe8);
+      overflow: hidden;
+    }
+
+    .card {
+      background: rgba(255,255,255,0.88);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+      padding: 36px 26px;
+      border-radius: 28px;
+      text-align: center;
+      box-shadow: 0 12px 30px rgba(0,0,0,0.14);
+      animation: springIn 0.9s cubic-bezier(.34,1.56,.64,1);
+      position: relative;
+      width: 320px;
+    }
+
+    @keyframes springIn {
+      0% { transform: scale(0.8); opacity: 0; }
+      70% { transform: scale(1.05); }
+      100% { transform: scale(1); opacity: 1; }
+    }
+
+    .fadeOut {
+      animation: fadeOut 0.6s ease forwards;
+    }
+
+    @keyframes fadeOut {
+      to { opacity: 0; transform: scale(0.95); }
+    }
+
+    h1 {
+      color: #111827;
+      font-size: 1.35rem;
+      font-weight: 600;
+      line-height: 1.4;
+      margin-bottom: 12px;
+    }
+
+    p {
+      color: #6b7280;
+      font-size: 0.95rem;
+      margin-bottom: 18px;
+      line-height: 1.45;
+    }
+
+    .buttons {
+      display: flex;
+      gap: 14px;
+      justify-content: center;
+    }
+
+    button {
+      flex: 1;
+      padding: 12px 0;
+      font-size: 16px;
+      border: none;
+      border-radius: 14px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: transform 0.12s cubic-bezier(.34,1.56,.64,1);
+    }
+
+    button:active {
+      transform: scale(0.92);
+    }
+
+    #yesBtn {
+      background: linear-gradient(180deg, #ff375f, #ff2d55);
+      color: #fff;
+      box-shadow: 0 6px 16px rgba(255,45,85,0.35);
+    }
+
+    #noBtn {
+      background: #f3f4f6;
+      color: #374151;
+    }
+
+    .signature {
+      margin-top: 20px;
+      font-size: 1.4rem;
+      font-family: "Bradley Hand", "Segoe Script", "Apple Chancery", cursive;
+      color: #ff2d55;
+      opacity: 0;
+      animation: fadeSign 1.2s ease forwards;
+      animation-delay: 0.6s;
+    }
+
+    @keyframes fadeSign {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .hearts {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      overflow: hidden;
+    }
+
+    .heart {
+      position: absolute;
+      color: #ff2d55;
+      animation: floatUp 5s linear infinite;
+    }
+
+    @keyframes floatUp {
+      0% { transform: translateY(100vh) scale(0.6); opacity: 0; }
+      10% { opacity: 1; }
+      100% { transform: translateY(-10vh) scale(1.1); opacity: 0; }
+    }
+
+    .rose {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%) scale(0);
+      font-size: 64px;
+      animation: popRose 1.4s cubic-bezier(.34,1.56,.64,1) forwards;
+      z-index: 5;
+    }
+
+    @keyframes popRose {
+      0% { transform: translate(-50%, -50%) scale(0); opacity: 0; }
+      60% { transform: translate(-50%, -50%) scale(1.2); opacity: 1; }
+      100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+    }
+
+    .footer {
+      position: fixed;
+      bottom: 16px;
+      width: 100%;
+      text-align: center;
+      font-size: 0.75rem;
+      color: rgba(107,114,128,0.9);
+      letter-spacing: 0.3px;
+      pointer-events: none;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="footer">Crafted with Love • Abhay</div>
+
+  <div class="card" id="card">
+    <h1>💖 <span id="herName">Ridhima</span>, will you be my Valentine? 💖</h1>
+    <p id="message">I promise lots of smiles, care, and sweet moments 🌹</p>
+
+    <div class="buttons">
+      <button id="yesBtn">Yes 💕</button>
+      <button id="noBtn">No 🙈</button>
+    </div>
+  </div>
+
+  <div class="hearts" id="hearts"></div>
+
+  <script>
+    const noBtn = document.getElementById('noBtn');
+    const yesBtn = document.getElementById('yesBtn');
+    const heartsContainer = document.getElementById('hearts');
+    const message = document.getElementById('message');
+    const herNameSpan = document.getElementById('herName');
+    const music = document.getElementById('bgMusic');
+    const card = document.getElementById('card');
+
+    // Optional name override via URL (?name=...)
+    const params = new URLSearchParams(window.location.search);
+    const herName = params.get('name');
+    if (herName) herNameSpan.textContent = herName;
+
+    // Start music on first interaction (safe for browsers)
+    document.body.addEventListener('click', () => {
+      if (music && music.paused) music.play().catch(() => {});
+    }, { once: true });
+
+    // NO button message cycle (shuffled & infinite)
+    let noClickCount = 0;
+    const noMessages = [
+      'No 🙈',
+      'Are you sure? 🥺',
+      'Pookie please 🥹',
+      'Don’t do this to me :(',
+      'You’re breaking my heart 💔',
+      'I’m gonna cry… 😭'
+    ];
+
+    // Shuffle messages once on load (Fisher–Yates)
+    for (let i = noMessages.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [noMessages[i], noMessages[j]] = [noMessages[j], noMessages[i]];
+    }
+
+    noBtn.addEventListener('click', () => {
+      const idx = noClickCount % noMessages.length; // infinite loop
+      message.textContent = noMessages[idx];
+      noBtn.textContent = noMessages[idx];
+      noClickCount++;
+    });
+
+    // YES click
+    yesBtn.addEventListener('click', () => {
+      if (navigator.vibrate) navigator.vibrate([30, 40, 30]);
+
+      card.classList.add('fadeOut');
+      launchFireworks();
+
+      setTimeout(() => {
+        card.innerHTML = `
+          <h1>💖 Yay, ${herNameSpan.textContent} 💖</h1>
+          <p>You just made this Valentine unforgettable ✨</p>
+          <p>Forever starts with moments like this 🌹</p>
+          <p>Suniye madam ji, aap mujhe sach mein bahut achhi lagti ho.
+Jab hamari baat nahi hoti, din kuch adhoora sa lagta hai.
+Main us pal ka intezaar kar raha hoon jab hum pehli baar ek-dusre ko saamne se dekhenge.</p>
+          <p>I like it when you say baatein😉, ${herNameSpan.textContent} — kyunki kuch log sirf pasand nahi, feeling ban jaate hain.</p>
+          <div class="signature">Abhay ❤️</div>
+        `;
+        card.classList.remove('fadeOut');
+
+        const rose = document.createElement('div');
+        rose.className = 'rose';
+        rose.textContent = '';
+        document.body.appendChild(rose);
+      }, 700);
+    });
+
+    function createHeart() {
+      const heart = document.createElement('div');
+      heart.className = 'heart';
+      heart.textContent = '❤️';
+      heart.style.left = Math.random() * 100 + 'vw';
+      heart.style.fontSize = 16 + Math.random() * 24 + 'px';
+      heart.style.animationDuration = 2 + Math.random() * 3 + 's';
+      heartsContainer.appendChild(heart);
+      setTimeout(() => heart.remove(), 5000);
+    }
+
+    setInterval(createHeart, 250);
+
+    function launchFireworks() {
+      for (let i = 0; i < 80; i++) {
+        setTimeout(createHeart, i * 30);
+      }
+    }
+  </script>
+
+</body>
+</html>
